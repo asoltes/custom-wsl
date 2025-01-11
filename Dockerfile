@@ -75,6 +75,10 @@ RUN curl -L "$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/
 RUN curl -L "$(curl -s https://api.github.com/repos/minamijoyo/tfupdate/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.tar.gz")" > tfupdate.tar.gz && tar -xzf tfupdate.tar.gz tfupdate && rm tfupdate.tar.gz && sudo mv tfupdate /usr/bin/
 RUN curl -L "$(curl -s https://api.github.com/repos/minamijoyo/hcledit/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.tar.gz")" > hcledit.tar.gz && tar -xzf hcledit.tar.gz hcledit && rm hcledit.tar.gz && sudo mv hcledit /usr/bin/
 
+#Install Granted
+RUN curl -OL releases.commonfate.io/granted/v0.36.2/granted_0.36.2_linux_x86_64.tar.gz
+RUN tar -zxvf ./granted_0.36.2_linux_x86_64.tar.gz -C /usr/local/bin/
+
 # copy configuration files and bash initialization scripts
 COPY ./etc/wsl.conf /etc/wsl.conf
 # COPY ./etc/bash.bashrc /etc/bash.bashrc
@@ -84,11 +88,9 @@ COPY ./etc/wsl.conf /etc/wsl.conf
 RUN add-apt-repository ppa:wslutilities/wslu -y
 RUN apt update -y
 RUN apt install wslu -y
-RUN wslfetch
+# RUN wslfetch
 
 # copy executable files and scripts
 COPY --chmod=0755 ./etc/update-motd.d /etc/update-motd.d
-COPY --chmod=0755 ./files/npiperelay.exe /usr/bin/npiperelay.exe
-COPY --chmod=0755 ./files/npiperelay.exe /usr/bin/wsl-notify-send.exe
-COPY --chmod=0755 ./files/register /opt/register
+COPY --chmod=0755 ./files/register.sh /opt/register.sh
 COPY --chmod=0755 ./files/.zshrc /root/.zshrc
