@@ -19,3 +19,5 @@ To install the image type
 ```shell
 wsl --import <name> <destination> /path/to/wsl-ubuntu-22.04.tar.gz
 ```
+
+Granted: https://docs.commonfate.io/granted/getting-started
