@@ -61,6 +61,12 @@ RUN wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /us
 RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
 RUN sudo apt update && sudo apt install terraform
 
+#Homebrew
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+#OHhmyPosh
+RUN curl -s https://ohmyposh.dev/install.sh | bash -s
+
 #Run Pre-commit-hooks
 RUN sudo apt update
 RUN apt install -y unzip software-properties-common python3 python3-pip python-is-python3

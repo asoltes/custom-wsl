@@ -114,5 +114,9 @@ autoload -U +X bashcompinit && bashcompinit
 
 source ${BMA_HOME:-$HOME/.bash-my-aws}/bash_completion.sh
 
-# asdf
+# asdf configurations
 . "$HOME/.asdf/asdf.sh"
+
+alias shopt='/usr/bin/shopt'
+
+eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
