@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # ARG WSL_USER=andresbukid
 # ARG WSL_USER_HOME=/home/$WSL_USER
@@ -6,9 +6,6 @@ FROM ubuntu:22.04
 
 # update and upgrade the image with the latest packages
 RUN apt-get -y update && apt-get -y upgrade
-
-# prepare the distribution for interactivity
-RUN echo 'y' | /usr/local/sbin/unminimize
 
 # install useful distro plumbing
 RUN apt-get -y install iptables lsof socat rsync gnupg wslu ntpdate show-motd command-not-found
@@ -27,7 +24,9 @@ RUN apt-get -y install vim nano curl wget gzip unzip tcpdump jq git
 # RUN useradd -ms /bin/bash $WSL_USER
 
 # set the default timezone to Asia/Manila
-RUN DEBIAN_FRONTEND=noninteractive TZ=Asia/Manila apt-get -y install tzdata
+RUN DEBIAN_FRONTEND=noninteractive TZ=Asia/Manila apt-get -y install tzdata unminimize 
+# prepare the distribution for interactivity
+RUN echo 'y' | unminimize
 RUN ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime && dpkg-reconfigure --frontend noninteractive tzdata
     
 # delete the motd files that already exist
@@ -63,16 +62,14 @@ RUN sudo apt update && sudo apt install terraform
 
 #Homebrew
 RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-
+RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /root/.zshrc
 #OHhmyPosh
-RUN curl -s https://ohmyposh.dev/install.sh | bash -s
+# RUN curl -s https://ohmyposh.dev/install.sh | bash -s
 
 #Run Pre-commit-hooks
 RUN sudo apt update
-RUN apt install -y unzip software-properties-common python3 python3-pip python-is-python3
-RUN python3 -m pip install --upgrade pip
-RUN pip3 install --no-cache-dir pre-commit
-RUN pip3 install --no-cache-dir checkov
+RUN apt install -y unzip software-properties-common python3 python3-pip python-is-python3 pipx
+RUN pip3 install --break-system-packages --no-cache-dir pre-commit
 RUN curl -L "$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest | grep -o -E -m 1 "https://.+?-linux-amd64.tar.gz")" > terraform-docs.tgz && tar -xzf terraform-docs.tgz terraform-docs && rm terraform-docs.tgz && chmod +x terraform-docs && sudo mv terraform-docs /usr/bin/
 RUN curl -L "$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest | grep -o -E -m 1 "https://.+?_Linux_x86_64.tar.gz")" > terrascan.tar.gz && tar -xzf terrascan.tar.gz terrascan && rm terrascan.tar.gz && sudo mv terrascan /usr/bin/ && terrascan init
 RUN curl -L "$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.zip")" > tflint.zip && unzip tflint.zip && rm tflint.zip && sudo mv tflint /usr/bin/

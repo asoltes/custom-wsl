@@ -3,7 +3,7 @@
 # Stop if anything fails
 set -euo pipefail
 
-IMAGE='wsl-ubuntu-22.04'
+IMAGE='wsl-ubuntu-24.04'
 
 # Make sure docker exists and if not show how to install it
 if ! command -v docker &> /dev/null; then
