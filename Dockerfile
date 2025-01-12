@@ -1,14 +1,13 @@
 FROM ubuntu:24.04
 
-# ARG WSL_USER=andresbukid
-# ARG WSL_USER_HOME=/home/$WSL_USER
-# ARG INSTALL_DIR=$WSL_USER_HOME
-
 # update and upgrade the image with the latest packages
 RUN apt-get -y update && apt-get -y upgrade
-
 # install useful distro plumbing
 RUN apt-get -y install iptables lsof socat rsync gnupg wslu ntpdate show-motd command-not-found
+
+#Homebrew
+RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /root/.zshrc
 
 # install the packages essential for development
 RUN apt-get -y install apt-utils sudo debianutils build-essential pkg-config man-db bash-completion
@@ -18,10 +17,7 @@ RUN apt-get -y install locales
 RUN locale-gen en_US.UTF-8
 
 # install useful commands
-RUN apt-get -y install vim nano curl wget gzip unzip tcpdump jq git
-
-# # Create user
-# RUN useradd -ms /bin/bash $WSL_USER
+RUN apt-get -y install vim nano curl wget gzip unzip tcpdump jq git nmap dnsutils iputils-ping traceroute mtr whois postgresql-client redis-tools bat
 
 # set the default timezone to Asia/Manila
 RUN DEBIAN_FRONTEND=noninteractive TZ=Asia/Manila apt-get -y install tzdata unminimize 
@@ -43,7 +39,7 @@ RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTO
 # ohmyzsh plugins
 RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 RUN git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-RUN git clone https://github.com/fdellwing/zsh-bat.git  ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-bat
+RUN git clone https://github.com/fdellwing/zsh-bat.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/zsh-bat
 RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf
 
 #bash my aws
@@ -59,10 +55,6 @@ RUN rm -rf awscliv2*
 RUN wget -O - https://apt.releases.hashicorp.com/gpg | sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
 RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
 RUN sudo apt update && sudo apt install terraform
-
-#Homebrew
-RUN /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-RUN echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> /root/.zshrc
 #OHhmyPosh
 # RUN curl -s https://ohmyposh.dev/install.sh | bash -s
 
@@ -95,5 +87,6 @@ RUN apt install wslu -y
 
 # copy executable files and scripts
 COPY --chmod=0755 ./etc/update-motd.d /etc/update-motd.d
+COPY --chmod=0755 ./etc/hosts /etc/hosts
 COPY --chmod=0755 ./files/register.sh /opt/register.sh
 COPY --chmod=0755 ./files/.zshrc /root/.zshrc

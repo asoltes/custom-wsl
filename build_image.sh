@@ -20,9 +20,9 @@ docker run --name $IMAGE $IMAGE
 echo "==> Exporting the image..."
 docker export $IMAGE | gzip > $IMAGE.tar.gz
 
-echo "==> Cleaning up..."
-docker rm $IMAGE
-docker rmi $IMAGE
+# echo "==> Cleaning up..."
+# docker rm $IMAGE
+# docker rmi $IMAGE
 
 filesize=$(du -m $IMAGE.tar.gz | awk '{print $1}')
 
