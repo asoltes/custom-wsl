@@ -17,7 +17,7 @@ RUN apt-get -y install locales
 RUN locale-gen en_US.UTF-8
 
 # install useful commands
-RUN apt-get -y install vim nano curl wget gzip unzip tcpdump jq git nmap dnsutils iputils-ping traceroute mtr whois postgresql-client redis-tools bat
+RUN apt-get -y install vim nano curl wget gzip unzip tcpdump jq git nmap dnsutils iputils-ping traceroute mtr whois postgresql-client redis-tools bat telnet netcat-openbsd
 
 # set the default timezone to Asia/Manila
 RUN DEBIAN_FRONTEND=noninteractive TZ=Asia/Manila apt-get -y install tzdata unminimize 
