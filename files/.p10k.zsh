@@ -65,7 +65,7 @@ function prompt_aws_session() {
     if (( minutes > 0 )); then
       countdown="${countdown} ${minutes}min"
     fi
-    p10k segment -b 237 -f 255 -i '⏳' -t "${countdown}"
+    p10k segment -b 234 -f 255 -i '⏳' -t "${countdown}"
   fi
 }
 
@@ -1484,7 +1484,7 @@ function prompt_aws_session() {
       # '*prod*'  PROD    # These values are examples that are unlikely
       # '*test*'  TEST    # to match your needs. Customize them as needed.
       '*'       DEFAULT)
-  typeset -g POWERLEVEL9K_AWS_DEFAULT_FOREGROUND=232
+  typeset -g POWERLEVEL9K_AWS_DEFAULT_FOREGROUND=252
   typeset -g POWERLEVEL9K_AWS_DEFAULT_BACKGROUND=255
   # typeset -g POWERLEVEL9K_AWS_DEFAULT_VISUAL_IDENTIFIER_EXPANSION='⭐'
 
