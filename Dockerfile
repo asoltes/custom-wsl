@@ -90,7 +90,7 @@ COPY --chmod=0755 ./etc/update-motd.d /etc/update-motd.d
 COPY --chmod=0755 ./etc/hosts /etc/hosts
 COPY --chmod=0755 ./files/register.sh /opt/register.sh
 COPY --chmod=0755 ./files/.zshrc /$WSL_DEFAULT_USERNAME/.zshrc
-COPY --chmod=0755 ./files/.p10k.zsh /$WSL_DEFAULT_USERNAME/.p10k.zsh
+# COPY --chmod=0755 ./files/.p10k.zsh /$WSL_DEFAULT_USERNAME/.p10k.zsh
 
 # COPY --chmod=0755 ./files/.ssh /$WSL_DEFAULT_USERNAME/.ssh/
 # RUN chmod -R 0644 /$WSL_DEFAULT_USERNAME/.ssh/
