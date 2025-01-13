@@ -19,7 +19,7 @@ RUN apt-get -y install locales
 RUN locale-gen en_US.UTF-8
 
 # install useful commands
-RUN apt-get -y install vim nano curl wget gzip unzip tcpdump jq git nmap dnsutils iputils-ping traceroute mtr whois postgresql-client redis-tools bat telnet netcat-openbsd unzip software-properties-common python3 python3-pip python-is-python3 pipx ripgrep
+RUN apt-get -y install vim nano curl wget gzip unzip tcpdump jq git nmap dnsutils iputils-ping traceroute mtr whois postgresql-client redis-tools bat telnet netcat-openbsd unzip software-properties-common python3 python3-pip python-is-python3 pipx ripgrep ansible
 
 # set the default timezone to Asia/Manila
 RUN DEBIAN_FRONTEND=noninteractive TZ=Asia/Manila apt-get -y install tzdata unminimize 
@@ -84,7 +84,6 @@ COPY ./etc/wsl.conf /etc/wsl.conf
 RUN add-apt-repository ppa:wslutilities/wslu -y
 RUN apt update -y
 RUN apt install wslu -y
-# RUN wslfetch
 
 # copy executable files and scripts
 COPY --chmod=0755 ./etc/update-motd.d /etc/update-motd.d
@@ -92,10 +91,7 @@ COPY --chmod=0755 ./etc/hosts /etc/hosts
 COPY --chmod=0755 ./files/register.sh /opt/register.sh
 COPY --chmod=0755 ./files/.zshrc /$WSL_DEFAULT_USERNAME/.zshrc
 COPY --chmod=0755 ./files/.p10k.zsh /$WSL_DEFAULT_USERNAME/.p10k.zsh
-COPY --chmod=0755 ./files/gaz/get-new-token.js ~/.oh-my-zsh/custom/plugins/gaz
-
 
 # COPY --chmod=0755 ./files/.ssh /$WSL_DEFAULT_USERNAME/.ssh/
 # RUN chmod -R 0644 /$WSL_DEFAULT_USERNAME/.ssh/
 # RUN chmod -R 400 /$WSL_DEFAULT_USERNAME/.ssh/id_rsa
-

@@ -122,3 +122,8 @@ alias shopt='/usr/bin/shopt'
 alias bat=batcat
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+# Message of the Day
+if [ -f /etc/update-motd.d ]; then
+    cat /etc/update-motd.d
+fi
