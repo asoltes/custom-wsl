@@ -1,5 +1,7 @@
 FROM ubuntu:24.04
 
+ARG WSL_DEFAULT_USERNAME=root
+
 # update and upgrade the image with the latest packages
 RUN apt-get -y update && apt-get -y upgrade
 # install useful distro plumbing
@@ -17,7 +19,7 @@ RUN apt-get -y install locales
 RUN locale-gen en_US.UTF-8
 
 # install useful commands
-RUN apt-get -y install vim nano curl wget gzip unzip tcpdump jq git nmap dnsutils iputils-ping traceroute mtr whois postgresql-client redis-tools bat telnet netcat-openbsd
+RUN apt-get -y install vim nano curl wget gzip unzip tcpdump jq git nmap dnsutils iputils-ping traceroute mtr whois postgresql-client redis-tools bat telnet netcat-openbsd unzip software-properties-common python3 python3-pip python-is-python3 pipx ripgrep
 
 # set the default timezone to Asia/Manila
 RUN DEBIAN_FRONTEND=noninteractive TZ=Asia/Manila apt-get -y install tzdata unminimize 
@@ -39,7 +41,7 @@ RUN git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTO
 # ohmyzsh plugins
 RUN git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
 RUN git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
-RUN git clone https://github.com/fdellwing/zsh-bat.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-bat
+# RUN git clone https://github.com/fdellwing/zsh-bat.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-bat
 RUN git clone https://github.com/asdf-vm/asdf.git ~/.asdf
 
 #bash my aws
@@ -59,8 +61,7 @@ RUN sudo apt update && sudo apt install terraform
 # RUN curl -s https://ohmyposh.dev/install.sh | bash -s
 
 #Run Pre-commit-hooks
-RUN sudo apt update
-RUN apt install -y unzip software-properties-common python3 python3-pip python-is-python3 pipx
+
 RUN pip3 install --break-system-packages --no-cache-dir pre-commit
 RUN curl -L "$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest | grep -o -E -m 1 "https://.+?-linux-amd64.tar.gz")" > terraform-docs.tgz && tar -xzf terraform-docs.tgz terraform-docs && rm terraform-docs.tgz && chmod +x terraform-docs && sudo mv terraform-docs /usr/bin/
 RUN curl -L "$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest | grep -o -E -m 1 "https://.+?_Linux_x86_64.tar.gz")" > terrascan.tar.gz && tar -xzf terrascan.tar.gz terrascan && rm terrascan.tar.gz && sudo mv terrascan /usr/bin/ && terrascan init
@@ -89,4 +90,12 @@ RUN apt install wslu -y
 COPY --chmod=0755 ./etc/update-motd.d /etc/update-motd.d
 COPY --chmod=0755 ./etc/hosts /etc/hosts
 COPY --chmod=0755 ./files/register.sh /opt/register.sh
-COPY --chmod=0755 ./files/.zshrc /root/.zshrc
+COPY --chmod=0755 ./files/.zshrc /$WSL_DEFAULT_USERNAME/.zshrc
+COPY --chmod=0755 ./files/.p10k.zsh /$WSL_DEFAULT_USERNAME/.p10k.zsh
+COPY --chmod=0755 ./files/gaz/get-new-token.js ~/.oh-my-zsh/custom/plugins/gaz
+
+
+# COPY --chmod=0755 ./files/.ssh /$WSL_DEFAULT_USERNAME/.ssh/
+# RUN chmod -R 0644 /$WSL_DEFAULT_USERNAME/.ssh/
+# RUN chmod -R 400 /$WSL_DEFAULT_USERNAME/.ssh/id_rsa
+
