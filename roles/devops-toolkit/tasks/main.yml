@@ -344,21 +344,21 @@
       dest: "/etc/wsl.conf"
       mode: '0755'
 
-  - name: Install asdf plugin in asdf
-    shell: |
-      /bin/zsh -c asdf plugin-add terraform latest
-      /bin/zsh && asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-      /bin/zsh && asdf plugin-add chezmoi https://github.com/joke/asdf-chezmoi.git
-    ignore_errors: yes
+  # - name: Install asdf plugin in asdf
+  #   shell: |
+  #     /bin/zsh -c asdf plugin-add terraform latest
+  #     /bin/zsh && asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+  #     /bin/zsh && asdf plugin-add chezmoi https://github.com/joke/asdf-chezmoi.git
+  #   ignore_errors: yes
 
-  - name: Install tools using asdf for Zsh
-    shell: |
-      /bin/zsh && asdf install terraform latest &&  asdf global terraform latest
-      /bin/zsh && asdf install nodejs 18.16.0 &&  asdf global nodejs 18.16.0
-      /bin/zsh && asdf install chezmoi 2.57.0 &&  asdf global chezmoi 2.57.0
-    ignore_errors: yes
+  # - name: Install tools using asdf for Zsh
+  #   shell: |
+  #     /bin/zsh && asdf install terraform latest &&  asdf global terraform latest
+  #     /bin/zsh && asdf install nodejs 18.16.0 &&  asdf global nodejs 18.16.0
+  #     /bin/zsh && asdf install chezmoi 2.57.0 &&  asdf global chezmoi 2.57.0
+  #   ignore_errors: yes
 
-  - name: Congratulations! you are almost done, :p
+  - name: Congratulations! you are almost done! {{ ansible_user }}
     vars:
       msg: |
           < Congrats, {{ ansible_user }}! you can now create a new terminal session! and rerun the playbook just to make sure :p lol!>
