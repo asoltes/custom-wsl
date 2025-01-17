@@ -1,8 +1,29 @@
 ---
 - hosts: local
+  become: yes
   roles:
     - devops-toolkit
-    - ets-toolkit
+    # - ets-toolkit
+
+  pre_tasks:
+  - name: Ensuring Homebrew Is Installed
+    stat:
+      path: /home/linuxbrew/.linuxbrew/
+    register: homebrew_check
+
+  - name: Fail If Homebrew Is Not Installed and install_homebrew_if_missing Is False
+    fail:
+      msg: Homebrew is missing...Install from http://brew.sh/
+    when:
+      - not homebrew_check.stat.exists
+      - not install_homebrew_if_missing
+
+  - name: Installing Homebrew
+    shell: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    when:
+      - not homebrew_check.stat.exists
+      - install_homebrew_if_missing
   vars:
       ansible_user: "andres"
       hostname: "terminal"
+      install_homebrew_if_missing: true

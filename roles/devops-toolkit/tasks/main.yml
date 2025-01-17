@@ -1,12 +1,10 @@
 ---
   - name: Update and upgrade packages
-    become: yes
     apt:
       update_cache: yes
       upgrade: dist
 
   - name: Install useful utilities
-    become: yes
     apt:
       name:
         - iptables
@@ -21,7 +19,6 @@
       state: present
 
   - name: Install essential development packages
-    become: yes
     apt:
       name:
         - apt-utils
@@ -79,23 +76,22 @@
       state: present
 
   - name: Configure timezone and unminimize distribution
-    become: true
     shell: |
       ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
       dpkg-reconfigure --frontend noninteractive tzdata
     when: ansible_facts['distribution_version'] == "24.04"
 
-  - name: Check if Homebrew is installed
-    stat:
-      path: /home/linuxbrew/.linuxbrew/bin/brew
-    register: homebrew_check
+  # - name: Check if Homebrew is installed
+  #   stat:
+  #     path: /home/linuxbrew/.linuxbrew/bin/brew
+  #   register: homebrew_check
 
-  - name: Install Homebrew
-    shell: |
-      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-      /bin/bash eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-    when: not homebrew_check.stat.exists
-
+  # - name: Install Homebrew
+  #   become: no
+  #   shell: |
+  #     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  #   when: not homebrew_check.stat.exists
+  #   ignore_errors: yes
 
   - name: Install Zsh
     apt:
@@ -103,13 +99,11 @@
       state: present
 
   - name: Set Zsh as the default shell
-    become: yes
     user:
       name: "{{ ansible_user }}"
       shell: /bin/zsh
 
   - name: Check if Oh My Zsh is installed
-    become: yes
     stat:
       path: "/home/{{ ansible_user }}/.oh-my-zsh"
     register: oh_my_zsh_check
@@ -145,16 +139,16 @@
       - { repo: 'https://github.com/asdf-vm/asdf.git', name: 'asdf' }
 
   - name: Check if AWS CLI is installed
-    command: aws --version
+    command: which aws
     register: aws_cli_check
     ignore_errors: true
 
   - name: Install AWS CLI
     shell: |
-      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      unzip awscliv2.zip
-      sudo ./aws/install
-      rm -rf awscliv2.zip
+      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/opt/awscliv2.zip"
+      unzip /opt/awscliv2.zip
+      sudo ./opt/aws/install
+      rm -rf /opt/awscliv2.zip
     when: aws_cli_check.rc != 0
 
   - name: Install Pre-commit hooks
@@ -162,7 +156,7 @@
       pip install pre-commit --break-system-packages
 
   - name: Check if terraform-docs is installed
-    command: terraform-docs --version
+    command: which terraform-docs
     register: terraform_docs_check
     ignore_errors: true
 
@@ -176,7 +170,7 @@
     when: terraform_docs_check.rc != 0
 
   - name: Check if terrascan is installed
-    command: terrascan version
+    command: which terrascan
     register: terrascan_check
     ignore_errors: true
 
@@ -190,7 +184,7 @@
     when: terrascan_check.rc != 0
 
   - name: Check if tflint is installed
-    command: tflint --version
+    command: which tflint
     register: tflint_check
     ignore_errors: true
 
@@ -203,7 +197,7 @@
     when: tflint_check.rc != 0
 
   - name: Check if tfsec is installed
-    command: tfsec --version
+    command: which tfsec
     register: tfsec_check
     ignore_errors: true
 
@@ -215,7 +209,7 @@
     when: tfsec_check.rc != 0
 
   - name: Check if trivy is installed
-    command: trivy --version
+    command: which trivy
     register: trivy_check
     ignore_errors: true
 
@@ -228,7 +222,7 @@
     when: trivy_check.rc != 0
 
   - name: Check if tfupdate is installed
-    command: tfupdate --version
+    command: which tfupdate
     register: tfupdate_check
     ignore_errors: true
 
@@ -241,7 +235,7 @@
     when: tfupdate_check.rc != 0
 
   - name: Check if hcledit is installed
-    command: hcledit version
+    command: which hcledit
     register: hcledit_check
     ignore_errors: true
 
@@ -254,7 +248,7 @@
     when: hcledit_check.rc != 0
 
   - name: Check if Granted is installed
-    command: granted --version
+    command: granted
     register: granted_check
     ignore_errors: true
 
@@ -269,12 +263,6 @@
     apt:
       name: wslu
       state: present
-
-  # - name: Copy wsl.conf configuration file
-  #   become: yes
-  #   copy:
-  #     src: ../../docker/etc/wsl.conf
-  #     dest: /etc/wsl.conf
 
   - name: Copy update-motd.d files
     copy:
@@ -314,9 +302,15 @@
       depth: 1
     when: not asdf_check.stat.exists
 
+  - name: Add WSL Configuration
+    copy:
+      src:  ./templates/p10k.zsh.j2
+      dest: "/home/{{ ansible_user }}/.p10k.zsh"
+      mode: '0755'
+
   - name: Source the zshrc script
     shell: |
-      source ~/.zshrc
+      source /home/{{ ansible_user }}/.zshrc
     args: 
       executable: /bin/zsh
     register: sourced
@@ -336,15 +330,31 @@
 
   - name: Install asdf plugin in asdf
     shell: |
-      asdf plugin-add terraform latest
-      asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-      asdf plugin-add chezmoi https://github.com/joke/asdf-chezmoi.git
+      /bin/zsh -c asdf plugin-add terraform latest
+      /bin/zsh && asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+      /bin/zsh && asdf plugin-add chezmoi https://github.com/joke/asdf-chezmoi.git
     ignore_errors: yes
 
   - name: Install tools using asdf for Zsh
-    register: sourced
     shell: |
-      asdf install terraform latest &&  asdf global terraform latest
-      asdf install nodejs 18.16.0 &&  asdf global nodejs 18.16.0
-      asdf install chezmoi 2.57.0 &&  asdf global chezmoi 2.57.0
+      /bin/zsh && asdf install terraform latest &&  asdf global terraform latest
+      /bin/zsh && asdf install nodejs 18.16.0 &&  asdf global nodejs 18.16.0
+      /bin/zsh && asdf install chezmoi 2.57.0 &&  asdf global chezmoi 2.57.0
     ignore_errors: yes
+
+  - name: Congratulations! you are almost done, :p
+    vars:
+      msg: |
+          < Congrats, {{ ansible_user }}! you can now create a new terminal session! and rerun the playbook just to make sure :p lol!>
+            -----------------------
+              \
+                \
+                    .--.
+                  |o_o |
+                  |:_/ |
+                  //   \ \
+                (|     | )
+                /'\_   _/`\
+                \___)=(___/
+    debug:
+      msg: "{{ msg.split('\n') }}"
