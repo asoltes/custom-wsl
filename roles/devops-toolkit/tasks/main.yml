@@ -334,6 +334,6 @@
 
   # - name: Add Gaz Configuration
   #   template:
-  #     src:  templates/get-new-token.j2
+  #     src:  get-new-token.j2
   #     dest: "/home/{{ ansible_user }}/.oh-my-zsh/custom/plugins/gaz/.get-new-token.js"
   #     mode: '0755'
