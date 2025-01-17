@@ -2,6 +2,7 @@
 - hosts: local
   roles:
     - devops-toolkit
+    - ets-toolkit
   vars:
       ansible_user: "andres"
-
+      hostname: "terminal"

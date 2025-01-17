@@ -103,13 +103,15 @@
       state: present
 
   - name: Set Zsh as the default shell
+    become: yes
     user:
       name: "{{ ansible_user }}"
       shell: /bin/zsh
 
   - name: Check if Oh My Zsh is installed
+    become: yes
     stat:
-      path: "{{ ansible_env.HOME }}/.oh-my-zsh"
+      path: "/home/{{ ansible_user }}/.oh-my-zsh"
     register: oh_my_zsh_check
 
   - name: Install Oh My Zsh
@@ -125,19 +127,12 @@
       clone: yes
       depth: 1
 
-  - name: Check if asdf is installed
-    stat:
-      path: "{{ ansible_env.HOME }}/.asdf"
-    register: asdf_check
-
-  - name: Install asdf tool version manager
+  - name: Install Bash-my-aws
     git:
-      repo: 'https://github.com/asdf-vm/asdf.git'
-      remote: v0.15.0
-      dest: "/home/{{ ansible_user }}/.asdf"
+      repo: 'https://github.com/bash-my-aws/bash-my-aws.git'
+      dest: "/home/{{ ansible_user }}/.bash-my-aws"
       clone: yes
       depth: 1
-    when: not asdf_check.stat.exists
 
   - name: Install Zsh plugins
     git:
@@ -275,10 +270,11 @@
       name: wslu
       state: present
 
-  - name: Copy wsl.conf configuration file
-    copy:
-      src: ../../docker/etc/wsl.conf
-      dest: /etc/wsl.conf
+  # - name: Copy wsl.conf configuration file
+  #   become: yes
+  #   copy:
+  #     src: ../../docker/etc/wsl.conf
+  #     dest: /etc/wsl.conf
 
   - name: Copy update-motd.d files
     copy:
@@ -304,36 +300,51 @@
       dest: "/home/{{ ansible_user }}/.zshrc"
       mode: '0755'
   
+  - name: Check if asdf is installed
+    stat:
+      path: "{{ ansible_env.HOME }}/.asdf"
+    register: asdf_check
+
+  - name: Install asdf tool version manager
+    git:
+      repo: 'https://github.com/asdf-vm/asdf.git'
+      remote: v0.15.0
+      dest: "/home/{{ ansible_user }}/.asdf"
+      clone: yes
+      depth: 1
+    when: not asdf_check.stat.exists
+
   - name: Source the zshrc script
     shell: |
-      /bin/zsh {{ ansible_env.HOME }}/.zshrc
+      source ~/.zshrc
+    args: 
+      executable: /bin/zsh
+    register: sourced
+      # executable: /bin/bash
+    ignore_errors: yes
+
+  - name: Show sourced output
+    debug:
+      msg: '{{sourced}}'
+
+  - name: Add WSL Configuration
+    become: yes
+    template:
+      src:  wsl.conf.j2
+      dest: "/etc/wsl.conf"
+      mode: '0755'
 
   - name: Install asdf plugin in asdf
     shell: |
       asdf plugin-add terraform latest
       asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
       asdf plugin-add chezmoi https://github.com/joke/asdf-chezmoi.git
+    ignore_errors: yes
 
   - name: Install tools using asdf for Zsh
+    register: sourced
     shell: |
       asdf install terraform latest &&  asdf global terraform latest
       asdf install nodejs 18.16.0 &&  asdf global nodejs 18.16.0
       asdf install chezmoi 2.57.0 &&  asdf global chezmoi 2.57.0
-
-  # - name: Install GAZ
-  #   git:
-  #     repo: 'git@bitbucket.org:etsprojects/loans-sre-toolkit.git'
-  #     dest: "/home/{{ ansible_user }}/"
-  #     clone: yes
-  #     depth: 1
-
-  # - name: Deploy GAZ
-  #   shell: |
-  #         cd /home/{{ ansible_user }}/loans-sre-toolkit/zsh/plugins/p10k && bash deploy.zsh
-  #         cd /home/{{ ansible_user }}/loans-sre-toolkit/zsh/plugins/gaz && bash deploy.zsh
-
-  # - name: Add Gaz Configuration
-  #   template:
-  #     src:  get-new-token.j2
-  #     dest: "/home/{{ ansible_user }}/.oh-my-zsh/custom/plugins/gaz/.get-new-token.js"
-  #     mode: '0755'
+    ignore_errors: yes

@@ -65,7 +65,7 @@ function prompt_aws_session() {
     if (( minutes > 0 )); then
       countdown="${countdown} ${minutes}min"
     fi
-    p10k segment -b 234 -f 255 -i '⏳' -t "${countdown}"
+    p10k segment -b 253 -f 232 -i '⏳' -t "${countdown}"
   fi
 }
 
@@ -1484,8 +1484,8 @@ function prompt_aws_session() {
       # '*prod*'  PROD    # These values are examples that are unlikely
       # '*test*'  TEST    # to match your needs. Customize them as needed.
       '*'       DEFAULT)
-  typeset -g POWERLEVEL9K_AWS_DEFAULT_FOREGROUND=237
-  typeset -g POWERLEVEL9K_AWS_DEFAULT_BACKGROUND=255
+  typeset -g POWERLEVEL9K_AWS_DEFAULT_FOREGROUND=7
+  typeset -g POWERLEVEL9K_AWS_DEFAULT_BACKGROUND=237
   # typeset -g POWERLEVEL9K_AWS_DEFAULT_VISUAL_IDENTIFIER_EXPANSION='⭐'
 
   # AWS segment format. The following parameters are available within the expansion.
@@ -1772,7 +1772,7 @@ function prompt_aws_session() {
   #   - always:   Trim down prompt when accepting a command line.
   #   - same-dir: Trim down prompt when accepting a command line unless this is the first command
   #               typed after changing current working directory.
-  typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=always
+  typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=off
 
   # Instant prompt mode.
   #

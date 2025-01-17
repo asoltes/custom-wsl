@@ -1,6 +1,9 @@
 # custom-wsl
+This folder contains scripts and instructions to generate a personalized WSL Ubuntu image..
 
-This folder contains scripts and instructions to generate a personalized WSL Ubuntu image.
+Whoops! This code was whipped up in a caffeine-fueled frenzy and barely tested. So hang tight—code enhancements coming soon, I promise! 🚀😅
+
+## Ansible Way
 
 `vi /etc/sudoers`
 ```shell
@@ -9,10 +12,43 @@ This folder contains scripts and instructions to generate a personalized WSL Ubu
 username  ALL=(ALL) NOPASSWD: ALL
 ```
 
+```shell
+ansible-playbook -i inventory.ini site.yml 
+```
+## 
+
+```shell
+TASK [ets-toolkit : Add Gaz Configuration] *****************************************************************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [ets-toolkit : Source the zshrc script] ***************************************************************************************************************************************************************************************************************
+changed: [localhost]
+
+TASK [ets-toolkit : Congratulations! you are almost done, :p] **********************************************************************************************************************************************************************************************
+ok: [localhost] => {
+    "msg": [
+        "< Congrats, andres! you can now create a new terminal session! and rerun the playbook just to make sure :p lol!>",
+        "  -----------------------",
+        "    \\",
+        "      \\",
+        "          .--.",
+        "        |o_o |",
+        "        |:_/ |",
+        "        //   \\ \\",
+        "      (|     | )",
+        "      /'\\_   _/`\\",
+        "      \\___)=(___/",
+        ""
+    ]
+}
+```
+
+## Docker Way
+Documentation: https://etsinternal.atlassian.net/wiki/spaces/TA/pages/5346101038/How+To+Build+Custom+WSL+Image+with+DevOps+Tools
 To make the image type:
 
 ```shell
-> ./build_image.sh
+> ./docker/build_image.sh
 ```
 
 To install the image type

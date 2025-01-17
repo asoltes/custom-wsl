@@ -70,7 +70,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git z zsh-autosuggestions zsh-syntax-highlighting asdf)
+plugins=(git z zsh-autosuggestions zsh-syntax-highlighting asdf gaz)
 
 
 source $ZSH/oh-my-zsh.sh
@@ -104,7 +104,7 @@ source $ZSH/oh-my-zsh.sh
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
-#bashmyaws
+## bashmyaws
 export PATH="$PATH:${BMA_HOME:-$HOME/.bash-my-aws}/bin"
 export BMA_COLUMNISE_ONLY_WHEN_TERMINAL_PRESENT=true
 source ${BMA_HOME:-$HOME/.bash-my-aws}/aliases
