@@ -245,8 +245,9 @@
 
   - name: Install Granted
     shell: |
-      curl -OL releases.commonfate.io/granted/v0.36.2/granted_0.36.2_linux_x86_64.tar.gz
-      tar -zxvf granted_0.36.2_linux_x86_64.tar.gz -C /usr/local/bin/
+      curl -o /tmp/granted_0.36.2_linux_x86_64.tar.gz -OL releases.commonfate.io/granted/v0.36.2/granted_0.36.2_linux_x86_64.tar.gz
+      tar -zxvf /tmp/granted_0.36.2_linux_x86_64.tar.gz -C /usr/local/bin/
+      rm -f /tmp/granted_0.36.2_linux_x86_64.tar.gz
     when: granted_check.rc != 0
 
   - name: Install WSL utilities
