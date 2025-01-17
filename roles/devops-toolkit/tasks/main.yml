@@ -317,5 +317,5 @@
   - name: Install tools using asdf for Zsh
     shell: |
       asdf install terraform latest &&  asdf global terraform latest
-      asdf install nodejs 18.16.0 $$  asdf global terraform 18.16.0
-      asdf install chezmoi 2.1.0 $$  asdf global terraform 2.1.0
+      asdf install nodejs 18.16.0 $$  asdf global nodejs 18.16.0
+      asdf install chezmoi 2.57.0 $$  asdf global chezmoi 2.57.0
