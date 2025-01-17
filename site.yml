@@ -8,7 +8,6 @@
   vars:
       ansible_user: "andres"
       hostname: "terminal"
-      install_homebrew_if_missing: true
       awscli_users:
         - name: andres
           group: andres
