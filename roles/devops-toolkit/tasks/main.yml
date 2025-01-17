@@ -143,13 +143,29 @@
     register: aws_cli_check
     ignore_errors: true
 
-  - name: Install AWS CLI
-    shell: |
-      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "/opt/awscliv2.zip"
-      unzip /opt/awscliv2.zip
-      sudo ./opt/aws/install
-      rm -rf /opt/awscliv2.zip
-    when: aws_cli_check.rc != 0
+  - name: Download AWS CLI v2
+    ansible.builtin.get_url:
+      url: "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip"
+      dest: "/tmp/awscliv2.zip"
+
+  # - name: Unzip AWS CLI v2 installer
+  #   ansible.builtin.unarchive:
+  #     src: "/tmp/awscliv2.zip"
+  #     dest: "/tmp/"
+  #     remote_src: yes
+
+  # - name: Install AWS CLI v2
+  #   ansible.builtin.command:
+  #     cmd: "sudo ./aws/install --update"
+  #     chdir: "/tmp"
+
+  # - name: Verify AWS CLI installation
+  #   ansible.builtin.command:
+  #     cmd: "aws --version"
+  #   register: aws_version_output
+
+  # - debug:
+  #     msg: "AWS CLI installed: {{ aws_version_output.stdout }}"
 
   - name: Install Pre-commit hooks
     shell: |
@@ -304,7 +320,7 @@
 
   - name: Add WSL Configuration
     copy:
-      src:  ./templates/p10k.zsh.j2
+      src:  templates/p10k.zsh.j2
       dest: "/home/{{ ansible_user }}/.p10k.zsh"
       mode: '0755'
 
