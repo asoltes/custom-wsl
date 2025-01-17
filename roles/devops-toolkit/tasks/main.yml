@@ -1,10 +1,12 @@
 ---
   - name: Update and upgrade packages
+    become: yes
     apt:
       update_cache: yes
       upgrade: dist
 
   - name: Install useful utilities
+    become: yes
     apt:
       name:
         - iptables
@@ -19,6 +21,7 @@
       state: present
 
   - name: Install essential development packages
+    become: yes
     apt:
       name:
         - apt-utils
@@ -76,10 +79,23 @@
       state: present
 
   - name: Configure timezone and unminimize distribution
+    become: true
     shell: |
       ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
       dpkg-reconfigure --frontend noninteractive tzdata
     when: ansible_facts['distribution_version'] == "24.04"
+
+  - name: Check if Homebrew is installed
+    stat:
+      path: /home/linuxbrew/.linuxbrew/bin/brew
+    register: homebrew_check
+
+  - name: Install Homebrew
+    shell: |
+      /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      /bin/bash eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+    when: not homebrew_check.stat.exists
+
 
   - name: Install Zsh
     apt:
@@ -97,6 +113,7 @@
     register: oh_my_zsh_check
 
   - name: Install Oh My Zsh
+    become: no
     shell: |
       sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
     when: not oh_my_zsh_check.stat.exists
@@ -104,14 +121,28 @@
   - name: Install powerlevel10k theme
     git:
       repo: 'https://github.com/romkatv/powerlevel10k.git'
-      dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/themes/powerlevel10k"
+      dest: "/home/{{ ansible_user }}/.oh-my-zsh/custom/themes/powerlevel10k"
       clone: yes
       depth: 1
+
+  - name: Check if asdf is installed
+    stat:
+      path: "{{ ansible_env.HOME }}/.asdf"
+    register: asdf_check
+
+  - name: Install asdf tool version manager
+    git:
+      repo: 'https://github.com/asdf-vm/asdf.git'
+      remote: v0.15.0
+      dest: "/home/{{ ansible_user }}/.asdf"
+      clone: yes
+      depth: 1
+    when: not asdf_check.stat.exists
 
   - name: Install Zsh plugins
     git:
       repo: "{{ item.repo }}"
-      dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/{{ item.name }}"
+      dest: "/home/{{ ansible_user }}/.oh-my-zsh/custom/plugins/{{ item.name }}"
       clone: yes
     loop:
       - { repo: 'https://github.com/zsh-users/zsh-syntax-highlighting.git', name: 'zsh-syntax-highlighting' }
@@ -130,17 +161,6 @@
       sudo ./aws/install
       rm -rf awscliv2.zip
     when: aws_cli_check.rc != 0
-
-  # - name: Install Terraform
-  #   apt_key:
-  #     url: https://apt.releases.hashicorp.com/gpg
-  #     state: present
-  #   apt_repository:
-  #     repo: "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-  #     state: present
-  #   apt:
-  #     name: terraform
-  #     state: present
 
   - name: Install Pre-commit hooks
     shell: |
@@ -283,4 +303,19 @@
       src: ../../docker/files/.zshrc
       dest: "/home/{{ ansible_user }}/.zshrc"
       mode: '0755'
+  
+  - name: Source the zshrc script
+    shell: |
+      /bin/zsh {{ ansible_env.HOME }}/.zshrc
 
+  - name: Install asdf plugin in asdf
+    shell: |
+      asdf plugin-add terraform latest
+      asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+      asdf plugin-add chezmoi https://github.com/joke/asdf-chezmoi.git
+
+  - name: Install tools using asdf for Zsh
+    shell: |
+      asdf install terraform latest &&  asdf global terraform latest
+      asdf install nodejs 18.16.0 $$  asdf global terraform 18.16.0
+      asdf install chezmoi 2.1.0 $$  asdf global terraform 2.1.0
