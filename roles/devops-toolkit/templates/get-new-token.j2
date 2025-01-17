@@ -1,0 +1,34 @@
+const crypto = require("crypto");
+const totp = require("/home/{{ansible_user}}/.asdf/installs/nodejs/18.16.0/lib/node_modules/totp-generator"); # Changeme
+
+const secret = "ZekeExampleSecret";
+let encryptionKey = crypto
+  .createHash("sha256")
+  .update(String(secret))
+  .digest("base64")
+  .substring(0, 32);
+
+const iv = crypto.randomBytes(16);
+function encryptMFASecret(mfaSecret) {
+  const cipher = crypto.createCipheriv("aes-256-cbc", encryptionKey, iv);
+  let encryptedMfaSecret = cipher.update(mfaSecret, "utf8", "hex");
+  encryptedMfaSecret += cipher.final("hex");
+  return encryptedMfaSecret;
+}
+
+function decryptMFASecret(encryptedMfaSecret) {
+  const decipher = crypto.createDecipheriv("aes-256-cbc", encryptionKey, iv);
+  let decryptedMfaSecret = decipher.update(encryptedMfaSecret, "hex", "utf8");
+  decryptedMfaSecret += decipher.final("utf8");
+  return decryptedMfaSecret;
+}
+
+async function getNewToken(mfaSecret) {
+  const encryptedMfaSecret = await encryptMFASecret(mfaSecret);
+  const decrypted = await decryptMFASecret(encryptedMfaSecret);
+  const token = await totp(decrypted);
+  console.log(token);
+  return token;
+}
+
+getNewToken(process.argv[2]);

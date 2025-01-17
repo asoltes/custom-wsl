@@ -319,3 +319,21 @@
       asdf install terraform latest &&  asdf global terraform latest
       asdf install nodejs 18.16.0 &&  asdf global nodejs 18.16.0
       asdf install chezmoi 2.57.0 &&  asdf global chezmoi 2.57.0
+
+  - name: Install GAZ
+    git:
+      repo: 'git@bitbucket.org:etsprojects/loans-sre-toolkit.git'
+      dest: "/home/{{ ansible_user }}/"
+      clone: yes
+      depth: 1
+
+  - name: Deploy GAZ
+    shell: |
+          cd /home/{{ ansible_user }}/loans-sre-toolkit/zsh/plugins/p10k && bash deploy.zsh
+          cd /home/{{ ansible_user }}/loans-sre-toolkit/zsh/plugins/gaz && bash deploy.zsh
+
+  - name: Add Gaz Configuration
+    template:
+      src:  templates/get-new-token.j2
+      dest: "/home/{{ ansible_user }}/.oh-my-zsh/custom/plugins/gaz/.gazrc"
+      mode: '0755'
