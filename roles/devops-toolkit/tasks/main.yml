@@ -1,0 +1,285 @@
+---
+  - name: Update and upgrade packages
+    apt:
+      update_cache: yes
+      upgrade: dist
+
+  - name: Install useful utilities
+    apt:
+      name:
+        - iptables
+        - lsof
+        - socat
+        - rsync
+        - gnupg
+        - wslu
+        - ntpdate
+        - show-motd
+        - command-not-found
+      state: present
+
+  - name: Install essential development packages
+    apt:
+      name:
+        - apt-utils
+        - sudo
+        - debianutils
+        - build-essential
+        - pkg-config
+        - man-db
+        - bash-completion
+      state: present
+
+  - name: Install locales and generate en_US.UTF-8 locale
+    apt:
+      name: locales
+      state: present
+    notify:
+      - Generate locale
+
+  - name: Install useful commands
+    apt:
+      name:
+        - vim
+        - nano
+        - curl
+        - wget
+        - gzip
+        - unzip
+        - tcpdump
+        - jq
+        - git
+        - nmap
+        - dnsutils
+        - iputils-ping
+        - traceroute
+        - mtr
+        - whois
+        - postgresql-client
+        - redis-tools
+        - bat
+        - telnet
+        - netcat-openbsd
+        - unzip
+        - software-properties-common
+        - python3
+        - python3-pip
+        - python-is-python3
+        - pipx
+        - ripgrep
+        - ansible
+      state: present
+
+  - name: Set the default timezone to Asia/Manila
+    apt:
+      name: tzdata
+      state: present
+
+  - name: Configure timezone and unminimize distribution
+    shell: |
+      ln -fs /usr/share/zoneinfo/Asia/Manila /etc/localtime
+      dpkg-reconfigure --frontend noninteractive tzdata
+    when: ansible_facts['distribution_version'] == "24.04"
+
+  - name: Install Zsh
+    apt:
+      name: zsh
+      state: present
+
+  - name: Set Zsh as the default shell
+    user:
+      name: "{{ ansible_user }}"
+      shell: /bin/zsh
+
+  - name: Check if Oh My Zsh is installed
+    stat:
+      path: "{{ ansible_env.HOME }}/.oh-my-zsh"
+    register: oh_my_zsh_check
+
+  - name: Install Oh My Zsh
+    shell: |
+      sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+    when: not oh_my_zsh_check.stat.exists
+
+  - name: Install powerlevel10k theme
+    git:
+      repo: 'https://github.com/romkatv/powerlevel10k.git'
+      dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/themes/powerlevel10k"
+      clone: yes
+      depth: 1
+
+  - name: Install Zsh plugins
+    git:
+      repo: "{{ item.repo }}"
+      dest: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/{{ item.name }}"
+      clone: yes
+    loop:
+      - { repo: 'https://github.com/zsh-users/zsh-syntax-highlighting.git', name: 'zsh-syntax-highlighting' }
+      - { repo: 'https://github.com/zsh-users/zsh-autosuggestions', name: 'zsh-autosuggestions' }
+      - { repo: 'https://github.com/asdf-vm/asdf.git', name: 'asdf' }
+
+  - name: Check if AWS CLI is installed
+    command: aws --version
+    register: aws_cli_check
+    ignore_errors: true
+
+  - name: Install AWS CLI
+    shell: |
+      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      unzip awscliv2.zip
+      sudo ./aws/install
+      rm -rf awscliv2.zip
+    when: aws_cli_check.rc != 0
+
+  # - name: Install Terraform
+  #   apt_key:
+  #     url: https://apt.releases.hashicorp.com/gpg
+  #     state: present
+  #   apt_repository:
+  #     repo: "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+  #     state: present
+  #   apt:
+  #     name: terraform
+  #     state: present
+
+  - name: Install Pre-commit hooks
+    shell: |
+      pip install pre-commit --break-system-packages
+
+  - name: Check if terraform-docs is installed
+    command: terraform-docs --version
+    register: terraform_docs_check
+    ignore_errors: true
+
+  - name: Download and install terraform-docs
+    shell: |
+      curl -L "$(curl -s https://api.github.com/repos/terraform-docs/terraform-docs/releases/latest | grep -o -E -m 1 "https://.+?-linux-amd64.tar.gz")" > terraform-docs.tgz
+      tar -xzf terraform-docs.tgz terraform-docs
+      rm terraform-docs.tgz
+      chmod +x terraform-docs
+      sudo mv terraform-docs /usr/bin/
+    when: terraform_docs_check.rc != 0
+
+  - name: Check if terrascan is installed
+    command: terrascan version
+    register: terrascan_check
+    ignore_errors: true
+
+  - name: Download and install terrascan
+    shell: |
+      curl -L "$(curl -s https://api.github.com/repos/tenable/terrascan/releases/latest | grep -o -E -m 1 "https://.+?_Linux_x86_64.tar.gz")" > terrascan.tar.gz
+      tar -xzf terrascan.tar.gz terrascan
+      rm terrascan.tar.gz
+      sudo mv terrascan /usr/bin/
+      terrascan init
+    when: terrascan_check.rc != 0
+
+  - name: Check if tflint is installed
+    command: tflint --version
+    register: tflint_check
+    ignore_errors: true
+
+  - name: Download and install tflint
+    shell: |
+      curl -L "$(curl -s https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.zip")" > tflint.zip
+      unzip tflint.zip
+      rm tflint.zip
+      sudo mv tflint /usr/bin/
+    when: tflint_check.rc != 0
+
+  - name: Check if tfsec is installed
+    command: tfsec --version
+    register: tfsec_check
+    ignore_errors: true
+
+  - name: Download and install tfsec
+    shell: |
+      curl -L "$(curl -s https://api.github.com/repos/aquasecurity/tfsec/releases/latest | grep -o -E -m 1 "https://.+?tfsec-linux-amd64")" > tfsec
+      chmod +x tfsec
+      sudo mv tfsec /usr/bin/
+    when: tfsec_check.rc != 0
+
+  - name: Check if trivy is installed
+    command: trivy --version
+    register: trivy_check
+    ignore_errors: true
+
+  - name: Download and install trivy
+    shell: |
+      curl -L "$(curl -s https://api.github.com/repos/aquasecurity/trivy/releases/latest | grep -o -E -i -m 1 "https://.+?/trivy_.+?_Linux-64bit.tar.gz")" > trivy.tar.gz
+      tar -xzf trivy.tar.gz trivy
+      rm trivy.tar.gz
+      sudo mv trivy /usr/bin
+    when: trivy_check.rc != 0
+
+  - name: Check if tfupdate is installed
+    command: tfupdate --version
+    register: tfupdate_check
+    ignore_errors: true
+
+  - name: Download and install tfupdate
+    shell: |
+      curl -L "$(curl -s https://api.github.com/repos/minamijoyo/tfupdate/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.tar.gz")" > tfupdate.tar.gz
+      tar -xzf tfupdate.tar.gz tfupdate
+      rm tfupdate.tar.gz
+      sudo mv tfupdate /usr/bin/
+    when: tfupdate_check.rc != 0
+
+  - name: Check if hcledit is installed
+    command: hcledit version
+    register: hcledit_check
+    ignore_errors: true
+
+  - name: Download and install hcledit
+    shell: |
+      curl -L "$(curl -s https://api.github.com/repos/minamijoyo/hcledit/releases/latest | grep -o -E -m 1 "https://.+?_linux_amd64.tar.gz")" > hcledit.tar.gz
+      tar -xzf hcledit.tar.gz hcledit
+      rm hcledit.tar.gz
+      sudo mv hcledit /usr/bin/
+    when: hcledit_check.rc != 0
+
+  - name: Check if Granted is installed
+    command: granted --version
+    register: granted_check
+    ignore_errors: true
+
+  - name: Install Granted
+    shell: |
+      curl -OL releases.commonfate.io/granted/v0.36.2/granted_0.36.2_linux_x86_64.tar.gz
+      tar -zxvf granted_0.36.2_linux_x86_64.tar.gz -C /usr/local/bin/
+    when: granted_check.rc != 0
+
+  - name: Install WSL utilities
+    apt:
+      name: wslu
+      state: present
+
+  - name: Copy wsl.conf configuration file
+    copy:
+      src: ../../docker/etc/wsl.conf
+      dest: /etc/wsl.conf
+
+  - name: Copy update-motd.d files
+    copy:
+      src: ../../docker/etc/update-motd.d/
+      dest: /etc/update-motd.d/
+      mode: '0755'
+
+  - name: Copy hosts file
+    copy:
+      src: ../../docker/etc/hosts
+      dest: /etc/hosts
+      mode: '0755'
+
+  - name: Copy register.sh script
+    copy:
+      src: ../../docker/files/register.sh
+      dest: /opt/register.sh
+      mode: '0755'
+
+  - name: Copy .zshrc for default user
+    copy:
+      src: ../../docker/files/.zshrc
+      dest: "/home/{{ ansible_user }}/.zshrc"
+      mode: '0755'
+
